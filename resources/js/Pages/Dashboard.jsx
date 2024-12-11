@@ -1,20 +1,33 @@
 import React, { useState } from 'react';
+import axios from 'axios'; // Axios for making HTTP requests
 
 export default function Dashboard({ auth }) {
     const [activeTab, setActiveTab] = useState('create'); // Manage active tab state
     const [lobbyName, setLobbyName] = useState(''); // Manage lobby name state
+    const [loading, setLoading] = useState(false); // Manage loading state
+    const [error, setError] = useState(null); // Manage error messages
 
-    const handleCreateLobby = (e) => {
+    const handleCreateLobby = async (e) => {
         e.preventDefault();
-        console.log(`Lobby Name: ${lobbyName}`); // Log the entered lobby name
-        // Placeholder for lobby creation logic
-        // You would typically call a backend API here
-    };
+        setLoading(true);
+        setError(null);
 
-    const handleFindLobby = (e) => {
-        e.preventDefault();
-        console.log('Find Lobby');
-        // Placeholder for finding a lobby
+        try {
+            // Send data to backend
+            const response = await axios.post('/api/lobbies', {
+                name: lobbyName,
+                creator_id: auth.user.id, // Include user ID
+            });
+
+            console.log('Lobby Created:', response.data);
+            alert(`Lobby "${response.data.name}" created successfully!`);
+            setLobbyName(''); // Reset lobby name input
+        } catch (err) {
+            console.error('Error creating lobby:', err);
+            setError(err.response?.data?.message || 'Failed to create lobby. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -72,35 +85,21 @@ export default function Dashboard({ auth }) {
                                     placeholder="Enter lobby name"
                                 />
                             </div>
+                            {error && <p className="text-red-500 text-sm">{error}</p>}
                             <button 
                                 type="submit" 
-                                className="w-full py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
+                                disabled={loading}
+                                className={`w-full py-2 text-white rounded-md ${loading ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600 transition'}`}
                             >
-                                Create Lobby
+                                {loading ? 'Creating...' : 'Create Lobby'}
                             </button>
                         </form>
                     )}
 
                     {activeTab === 'find' && (
-                        <form onSubmit={handleFindLobby} className="space-y-4">
-                            <div>
-                                <label htmlFor="lobbyCode" className="block text-sm font-medium text-gray-700">
-                                    Lobby Code
-                                </label>
-                                <input 
-                                    type="text" 
-                                    id="lobbyCode"
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200"
-                                    placeholder="Enter lobby code"
-                                />
-                            </div>
-                            <button 
-                                type="submit" 
-                                className="w-full py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition"
-                            >
-                                Join Lobby
-                            </button>
-                        </form>
+                        <div>
+                            <p className="text-gray-500 text-center">Find Lobby feature coming soon!</p>
+                        </div>
                     )}
                 </div>
             </div>
