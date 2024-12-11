@@ -11,7 +11,8 @@ return new class extends Migration
         Schema::create('lobbies', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->foreignId('creator_id')->constrained('users'); // Foreign key for users table
+            $table->string('code')->default(rand(100000, 999999)); // Piešķir noklusējuma vērtību 6 ciparu kodu
+            $table->foreignId('creator_id')->constrained('users');
             $table->timestamps();
         });
     }

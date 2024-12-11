@@ -27,10 +27,10 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/api/lobbies', [LobbyController::class, 'store']);
-    Route::get('/api/lobbies', [LobbyController::class, 'index']);
-    Route::get('/api/lobbies/{lobby}', [LobbyController::class, 'show']);
-    Route::get('/api/lobbies/{lobby}/join', [LobbyController::class, 'join']);
-    Route::get('/api/lobbies/{lobby}/leave', [LobbyController::class, 'leave']);
+    Route::get('api/lobbies', [LobbyController::class, 'index']);
+    Route::get('api/lobbies/{lobby}', [LobbyController::class, 'show'])->name('lobby.show');
+    Route::get('/lobbies/{lobby}/join', [LobbyController::class, 'join']);
+    Route::get('/lobbies/{lobby}/leave', [LobbyController::class, 'leave']);
 
 
 });

@@ -12,6 +12,7 @@ class Lobby extends Model
     protected $fillable = [
         'name',
         'creator_id',
+        'code', 
     ];
 }
     

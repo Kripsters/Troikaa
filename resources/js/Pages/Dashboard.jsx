@@ -13,15 +13,22 @@ export default function Dashboard({ auth }) {
         setError(null);
 
         try {
-            // Send data to backend
+            // Nosūtam datus uz backend, lai izveidotu lobby
             const response = await axios.post('/api/lobbies', {
                 name: lobbyName,
-                creator_id: auth.user.id, // Include user ID
+                creator_id: auth.user.id,
             });
 
+            // Iegūstam jauno lobby ID
+            const lobbyId = response.data.id;
+
             console.log('Lobby Created:', response.data);
-            alert(`Lobby "${response.data.name}" created successfully!`);
-            setLobbyName(''); // Reset lobby name input
+
+            // Kad lobby ir izveidots, pāradresējam uz šo lobby ID
+            window.location.href = `api/lobbies/${lobbyId}`; // Redirects to the new lobby page
+
+            // Atiestatām lobby nosaukumu
+            setLobbyName('');
         } catch (err) {
             console.error('Error creating lobby:', err);
             setError(err.response?.data?.message || 'Failed to create lobby. Please try again.');
