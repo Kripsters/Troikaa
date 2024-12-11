@@ -7,27 +7,46 @@ export default function Dashboard({ auth }) {
     const [loading, setLoading] = useState(false); // Manage loading state
     const [error, setError] = useState(null); // Manage error messages
 
+    // Function to check if the lobby name already exists
+    const checkLobbyNameExists = async (name) => {
+        try {
+            const response = await axios.get(`/api/lobbies/check-name?name=${name}`);
+            return response.data.exists; // Assuming the backend returns { exists: true/false }
+        } catch (err) {
+            console.error('Error checking lobby name:', err);
+            return false; // If there’s an error, assume the name doesn't exist
+        }
+    };
+
     const handleCreateLobby = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
 
+        // First, check if the lobby name already exists
+        const nameExists = await checkLobbyNameExists(lobbyName);
+        if (nameExists) {
+            setError('Lobby name already exists. Please choose a different name.');
+            setLoading(false);
+            return;
+        }
+
         try {
-            // Nosūtam datus uz backend, lai izveidotu lobby
+            // Send data to backend to create the lobby
             const response = await axios.post('/api/lobbies', {
                 name: lobbyName,
                 creator_id: auth.user.id,
             });
 
-            // Iegūstam jauno lobby ID
+            // Get the new lobby ID
             const lobbyId = response.data.id;
 
             console.log('Lobby Created:', response.data);
 
-            // Kad lobby ir izveidots, pāradresējam uz šo lobby ID
-            window.location.href = `api/lobbies/${lobbyId}`; // Redirects to the new lobby page
+            // Redirect to the new lobby page
+            window.location.href = `/api/lobbies/${lobbyId}`;
 
-            // Atiestatām lobby nosaukumu
+            // Reset lobby name
             setLobbyName('');
         } catch (err) {
             console.error('Error creating lobby:', err);
