@@ -26,7 +26,48 @@ class LobbyController extends Controller
         return response()->json($lobby, 201);  // Atgriež arī code
     }
 
+    public function deleteByUser($userId)
+    {
+        try {
+            // Izdzēš visas lobby, kur creator_id atbilst userId
+            Lobby::where('creator_id', $userId)->delete();
 
+            return response()->json([
+                'message' => 'All lobbies created by the user have been deleted successfully.'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'An error occurred while deleting lobbies.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function deleteLobbiesByCreator(Request $request)
+    {
+        // Validējam ievadi, lai nodrošinātu, ka tiek padots derīgs creator_id
+        $validated = $request->validate([
+            'creator_id' => 'required|exists:users,id',
+        ]);
+
+        $creatorId = $validated['creator_id'];
+
+        try {
+            // Dzēšam visus ierakstus no "lobbies", kur creator_id sakrīt
+            $deletedCount = Lobby::where('creator_id', $creatorId)->delete();
+
+            return response()->json([
+                'message' => "Deleted $deletedCount lobbies created by user with ID $creatorId",
+                'deleted_count' => $deletedCount
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'An error occurred while deleting lobbies.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
     public function show($id)
     {
         // Iegūst lobby datus pēc ID
