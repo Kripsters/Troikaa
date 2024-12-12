@@ -5,7 +5,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\LobbyController;
-
+use App\Models\Lobby;
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -27,13 +27,14 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/api/lobbies', [LobbyController::class, 'store']);
-    Route::get('api/lobbies', [LobbyController::class, 'index']);
-    Route::get('api/lobbies/{lobby}', [LobbyController::class, 'show'])->name('lobby.show');
-    Route::get('/lobbies/{lobby}/join', [LobbyController::class, 'join']);
-    Route::get('/lobbies/{lobby}/leave', [LobbyController::class, 'leave']);
-    Route::delete('/lobbies/user/{userId}', [LobbyController::class, 'deleteByUser']);
-    Route::delete('api/lobbies/delete-by-creator', [LobbyController::class, 'deleteLobbiesByCreator']);
+    Route::get('/api/lobbies', [LobbyController::class, 'index'])->name('lobbies.index')->middleware(['auth', 'verified']);
+    Route::get('/api/lobbies/{lobby}', [LobbyController::class, 'show'])->name('lobby.show');
+    Route::get('/api/lobbies/{lobby}/join', [LobbyController::class, 'join']);
+    Route::get('/api/lobbies/{lobby}/leave', [LobbyController::class, 'leave']);
+    Route::delete('/api/lobbies/user/{userId}', [LobbyController::class, 'deleteByUser']);
+    Route::delete('/api/lobbies/delete-by-creator', [LobbyController::class, 'deleteLobbiesByCreator']);
 
+    Route::get('/api/lobbies/find-by-code/{code}', [LobbyController::class, 'findByCode']);
 
 });
 

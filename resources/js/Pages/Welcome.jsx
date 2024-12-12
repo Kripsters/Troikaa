@@ -30,7 +30,7 @@ export default function Welcome({ auth }) {
                                     Choose from multiple card game variations
                                 </p>
                                 <a 
-                                    href="/login" 
+                                    href="/api/lobbies" 
                                     className="inline-block bg-green-500 text-white px-6 py-2 rounded-full hover:bg-green-600 transition"
                                 >
                                     Play Now

@@ -14,5 +14,9 @@ class Lobby extends Model
         'creator_id',
         'code', 
     ];
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'creator_id');
+    }
 }
     

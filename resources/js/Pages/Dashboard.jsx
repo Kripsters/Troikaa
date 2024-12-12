@@ -12,18 +12,21 @@ export default function Dashboard({ auth }) {
 
     const handleFindLobby = async () => {
         try {
-            const response = await axios.get(`/api/lobbies/${lobbyCode}`);
-            setLobbyInfo(response.data);
-            setError(null);
-        } catch (err) {
-            setLobbyInfo(null);
-            setError('Lobby not found or invalid code.');
-        }
-    };
+            setLoading(true); // Set loading state to true when making request
+            setError(null); // Reset error state
     
-    const joinLobby = (lobbyId) => {
-        // Redirect user to the lobby
-        window.location.href = `/api/lobbies/${lobbyId}`;
+            const response = await axios.get(`/api/lobbies/find-by-code/${lobbyCode}`);
+            const lobbyData = response.data;
+    
+            if (lobbyData.id) {
+                // Redirect to the lobby page
+                window.location.href = `/api/lobbies/${lobbyData.id}`;
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || 'Invalid code or lobby not found.');
+        } finally {
+            setLoading(false); // Set loading state to false after request
+        }
     };
 
 
@@ -141,7 +144,6 @@ export default function Dashboard({ auth }) {
                             </button>
                         </form>
                     )}
-
                     {activeTab === 'find' && (
                         <div className="space-y-4">
                             <div>
@@ -149,7 +151,7 @@ export default function Dashboard({ auth }) {
                                     Enter Lobby Code
                                 </label>
                                 <input
-                                    type="text"
+                                    type="password" // This hides the input text while typing
                                     id="lobbyCode"
                                     value={lobbyCode}
                                     onChange={(e) => setLobbyCode(e.target.value)}

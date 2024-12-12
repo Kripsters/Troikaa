@@ -79,12 +79,39 @@ class LobbyController extends Controller
         }
 
         // Atgriež lobby datus (arī code)
-        return Inertia::render('LobbyPage', [
+        return Inertia::render('GamePage', [
             'lobby' => $lobby,  // Pārsūtām lobby datus uz React komponenti
         ]);
         // return response()->json($lobby);
     }
 
+
+    public function findByCode($code)
+    {
+        // Search for the lobby by the given code
+        $lobby = Lobby::where('code', $code)->first();
+
+        if ($lobby) {
+            return response()->json([
+                'id' => $lobby->id,
+                'name' => $lobby->name,
+                'creator_id' => $lobby->creator_id,
+            ]);
+        } else {
+            return response()->json(['message' => 'Lobby not found'], 404);
+        }
+    }
+    public function index()
+    {
+        // Retrieve all lobbies with their creators, ordered by most recent first
+        $lobbies = Lobby::with('creator')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+            return Inertia::render('LobbiesIndex', [
+                'lobbies' => $lobbies,  // Pārsūtām lobby datus uz React komponenti
+            ]);
+        // return response()->json($lobbies);
+    }
 
 
 }

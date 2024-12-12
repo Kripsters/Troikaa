@@ -45,4 +45,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function createdLobbies()
+    {
+        return $this->hasMany(Lobby::class, 'creator_id');
+    }   
 }
