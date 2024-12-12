@@ -31,6 +31,8 @@ Route::middleware('auth')->group(function () {
     Route::get('api/lobbies/{lobby}', [LobbyController::class, 'show'])->name('lobby.show');
     Route::get('/lobbies/{lobby}/join', [LobbyController::class, 'join']);
     Route::get('/lobbies/{lobby}/leave', [LobbyController::class, 'leave']);
+    Route::delete('/lobbies/user/{userId}', [LobbyController::class, 'deleteByUser']);
+    Route::delete('api/lobbies/delete-by-creator', [LobbyController::class, 'deleteLobbiesByCreator']);
 
 
 });
