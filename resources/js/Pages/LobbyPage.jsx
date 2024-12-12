@@ -36,18 +36,39 @@ export default function LobbyPage({ lobby }) {
         }
     };
 
+    // Function to reset cards
+    const resetCards = () => {
+        setBackCards([]);
+        setFrontCards([]);
+        setRemainingCards(52); // Reset remaining cards to the initial count
+        console.log("Cards have been reset.");
+    };
+
     // Check if lobby data is available
     if (!lobby) {
         return <div>Loading...</div>;
     }
 
     // Function to handle the exit game button
-    const handleExitGame = () => {
-        // Your logic to handle exiting the game can go here
-        console.log("Exiting game...");
-        // For example, you can redirect to another page or reset state
-        window.location.href = '/'; // Redirect to the homepage
+    const handleExitGame = async () => {
+        if (!lobby?.creator_id) {
+            console.error("No creator ID found in lobby.");
+            return;
+        }
+    
+        try {
+            // Dzēš lobbies, izmantojot API pieprasījumu
+            const response = await axios.delete('/api/lobbies/delete-by-creator', {
+                data: { creator_id: lobby.creator_id },
+            });
+    
+            console.log(response.data.message);
+            window.location.href = '/'; // Pāradresē uz sākumlapu
+        } catch (error) {
+            console.error("Failed to delete lobbies:", error.response?.data || error.message);
+        }
     };
+    
 
     return (
         <div className="min-h-screen bg-gray-100 relative">
@@ -93,12 +114,18 @@ export default function LobbyPage({ lobby }) {
             </div>
 
             {/* Button to draw more cards */}
-            <div className="absolute bottom-4 left-4">
+            <div className="absolute bottom-4 left-4 flex space-x-4">
                 <button
                     onClick={drawCards}
                     className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition"
                 >
                     Draw Cards
+                </button>
+                <button
+                    onClick={resetCards}
+                    className="bg-yellow-500 text-white p-2 rounded-lg hover:bg-yellow-600 transition"
+                >
+                    Reset Cards
                 </button>
             </div>
 
