@@ -68,7 +68,7 @@ export default function Welcome({ auth }) {
                                     Track your progress and achievements
                                 </p>
                                 <a 
-                                    href="/dashboard" 
+                                    href="/profile" 
                                     className="inline-block bg-purple-500 text-white px-6 py-2 rounded-full hover:bg-purple-600 transition"
                                 >
                                     View Profile

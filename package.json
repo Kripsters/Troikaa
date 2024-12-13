@@ -22,6 +22,8 @@
     },
     "dependencies": {
         "@inertiajs/inertia": "^0.11.1",
+        "framer-motion": "^11.14.4",
+        "lucide-react": "^0.468.0",
         "react-router-dom": "^5.3.4"
     }
 }
