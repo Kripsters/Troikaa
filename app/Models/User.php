@@ -50,4 +50,24 @@ class User extends Authenticatable
     {
         return $this->hasMany(Lobby::class, 'creator_id');
     }   
+
+    // App\Models\User.php
+    public function lobbies()
+    {
+        return $this->belongsToMany(Lobby::class, 'lobby_user')
+            ->withPivot('status') // Include the status field from the pivot table
+            ->withTimestamps();
+    }
+    public function games()
+    {
+        return $this->belongsToMany(Game::class, 'game_user')
+            ->withPivot('role', 'status', 'score', 'player_state')
+            ->withTimestamps();
+    }
+
+    public function activeGames()
+    {
+        return $this->games()->where('games.status', 'in_progress');
+    }
+
 }

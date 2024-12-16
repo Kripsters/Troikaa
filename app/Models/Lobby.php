@@ -52,7 +52,7 @@ class Lobby extends Model
     public function players()
     {
         return $this->belongsToMany(User::class, 'lobby_user')
-                    ->withPivot('status') // if you want to store additional fields like 'status'
-                    ->withTimestamps();
+            ->withPivot('status') // Include the status field from the pivot table
+            ->withTimestamps();
     }
 }

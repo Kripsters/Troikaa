@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('lobby_id')->constrained('lobbies')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->enum('status', ['waiting', 'playing', 'finished'])->default('waiting');
+            $table->enum('status', ['waiting', 'ready', 'not ready'])->default('not ready');
             $table->timestamps();
         });
     }

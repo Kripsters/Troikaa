@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Lobby;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
 
 class LobbyController extends Controller
 {
@@ -40,11 +41,11 @@ class LobbyController extends Controller
     \DB::table('lobby_user')->insert([
         'lobby_id' => $lobby->id,
         'user_id' => $lobby->creator_id,
-        'status' => 'waiting',
+        'status' => 'not ready',
         'created_at' => now(),
         'updated_at' => now(),
     ]);
-    
+
     
         // Return the created lobby
         return response()->json($lobby, 201);
@@ -62,16 +63,28 @@ class LobbyController extends Controller
         ]);
     }
 
-    public function show($id)
-    {
-        // Find the lobby with its creator
-        $lobby = Lobby::with('players')->findOrFail($id);
+public function show($id)
+{
+    // Find the lobby with its players
+    $lobby = Lobby::with('players')->find($id);
 
-        return Inertia::render('LobbyPage', [
-            'lobby' => $lobby,
-        ]);
-                // return response()->json($lobby);
+    if (!$lobby) {
+        return response()->json(['message' => 'Lobby not found'], 404);
     }
+
+    $lobby = Lobby::with(['players' => function ($query) {
+        $query->select('users.id', 'users.name', 'lobby_user.status'); // Select specific fields
+    }])->find($id);
+
+    // Check if it's an API request or regular Inertia request
+    if (request()->expectsJson()) {
+        return response()->json($lobby);
+    }
+
+    return Inertia::render('LobbyPage', [
+        'lobby' => $lobby,
+    ]);
+}
 
     public function findByCode($code)
     {
@@ -125,7 +138,7 @@ class LobbyController extends Controller
         \DB::table('lobby_user')->insert([
             'lobby_id' => $lobby->id,
             'user_id' => $user->id,
-            'status' => 'waiting',  // Default status, can be updated later based on game progress
+            'status' => 'not ready',  // Default status, can be updated later based on game progress
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -188,6 +201,65 @@ public function leaveLobby($lobbyId)
     }
 }
 
+public function toggleReadyStatus($lobbyId)
+{
+    // Get the current user
+    $user = auth()->user();
+
+    if (!$user) {
+        return response()->json(['message' => 'User not authenticated'], 401);
+    }
+
+    // Find the lobby
+    $lobby = Lobby::findOrFail($lobbyId);
+
+    // Check if the user is in the lobby
+    $lobbyUser = DB::table('lobby_user')
+        ->where('lobby_id', $lobby->id)
+        ->where('user_id', $user->id)
+        ->first();
+
+    if (!$lobbyUser) {
+        return response()->json(['message' => 'You are not in this lobby'], 400);
+    }
+
+    // Toggle the user's ready status
+    $newStatus = $lobbyUser->status === 'ready' ? 'not ready' : 'ready';
+
+    try {
+        DB::table('lobby_user')
+            ->where('lobby_id', $lobby->id)
+            ->where('user_id', $user->id)
+            ->update([
+                'status' => $newStatus,
+                'updated_at' => now()
+            ]);
+
+        return response()->json([
+            'message' => 'Ready status updated',
+            'status' => $newStatus
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Failed to update ready status',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+public function startGame($lobbyId)
+{
+    try {
+        $lobby = Lobby::findOrFail($lobbyId);
+        // Logic to start the game
+        // Example: $lobby->start();
+
+        return response()->json(['message' => 'Game started'], 200);
+    } catch (\Exception $e) {
+        // Log the exception or handle it
+        return response()->json(['message' => 'Failed to start game', 'error' => $e->getMessage()], 500);
+    }
+}
 
 
 

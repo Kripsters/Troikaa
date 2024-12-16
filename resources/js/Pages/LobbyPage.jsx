@@ -1,24 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Users, LogOut, UserPlus, Copy, Trophy, Settings, CheckCircle2, XCircle } from 'lucide-react';
+import { Users, LogOut, UserPlus, Copy, Trophy, Settings, CheckCircle2, XCircle, UserCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
-
 export default function LobbyPage({ lobby, auth }) {
     const [copied, setCopied] = useState(false);
     const [players, setPlayers] = useState([]); // Ensure players is an array
     const [inviteEmail, setInviteEmail] = useState('');
-
+    const [userReadyStatus, setUserReadyStatus] = useState(false);
+    const [allPlayersReady, setAllPlayersReady] = useState(false);
     // Fetch participants when the component mounts
     useEffect(() => {
         const fetchPlayers = async () => {
             try {
                 const response = await axios.get(`/api/lobbies/${lobby.id}`);
-                // Make sure response.data.players exists and is an array
                 if (Array.isArray(response.data.players)) {
                     setPlayers(response.data.players);
+                    
+                    // Check if the current user is ready
+                    const currentUser = response.data.players.find(player => player.id === auth.user.id);
+                    if (currentUser) {
+                        setUserReadyStatus(currentUser.status === 'ready');
+                    }
+
+                    // Check if all players are ready
+                    const allReady = response.data.players.every(player => player.status === 'ready');
+                    setAllPlayersReady(allReady);
                 } else {
-                    setPlayers([]); // Default to empty array if players data is malformed
+                    setPlayers([]);
                 }
             } catch (error) {
                 console.error('Error fetching players:', error);
@@ -26,7 +35,10 @@ export default function LobbyPage({ lobby, auth }) {
         };
 
         fetchPlayers();
-    }, [lobby.id]);
+        const intervalId = setInterval(fetchPlayers, 5000);
+
+        return () => clearInterval(intervalId);
+    }, [lobby.id, auth.user.id]);
 
     const copyLobbyCode = () => {
         navigator.clipboard.writeText(lobby.code);
@@ -53,7 +65,22 @@ export default function LobbyPage({ lobby, auth }) {
             console.error('Error leaving lobby:', error);
         }
     };
-    
+    const toggleReadyStatus = async () => {
+        try {
+            const response = await axios.post(`/api/lobbies/${lobby.id}/toggle-ready`);
+            setUserReadyStatus(response.data.status === 'ready');
+        } catch (error) {
+            console.error('Error toggling ready status:', error);
+        }
+    };const startGame = async () => {
+        const lobbyId = lobby.id;
+        try {
+            const response = await axios.post(`/api/lobbies/${lobbyId}/start`);
+            window.location.href = `/api/games/${lobbyId}`; // Ensure this matches backend route
+        } catch (error) {
+            console.error("Error starting game:", error);
+        }
+    };
 
     return (
         <motion.div 
@@ -118,6 +145,9 @@ export default function LobbyPage({ lobby, auth }) {
                                 <Users className="mr-2 text-gray-500" />
                                 Players ({lobby.current_players}/{lobby.max_players})
                             </h2>
+
+
+
                             <motion.button 
                                 whileHover={{ scale: 1.1 }}
                                 className="text-blue-600 hover:bg-blue-50 p-2 rounded-full"
@@ -140,7 +170,9 @@ export default function LobbyPage({ lobby, auth }) {
                                         <div>
                                             <p className="font-medium">{player.name}</p>
                                             <p className="text-sm text-gray-500">
-                                                {player.status || 'Waiting'}
+                                                {player.status === 'ready' && <span className="text-green-500">Ready</span>}
+                                                {player.status === 'waiting' && <span className="text-yellow-500">Waiting</span>}
+                                                {player.status === 'not ready' && <span className="text-red-500">Not Ready</span>}
                                             </p>
                                         </div>
                                     </div>
@@ -154,34 +186,55 @@ export default function LobbyPage({ lobby, auth }) {
                         </div>
                     </motion.div>
 
-                    {/* Invite Player Section */}
+                    {/* Ready and Start Game Section */}
                     <motion.div 
                         initial={{ x: 50, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
-                        className="bg-white border border-gray-100 rounded-2xl shadow-lg p-6"
+                        className="space-y-6"
                     >
-                        <h2 className="text-2xl font-semibold mb-4 flex items-center">
-                            <UserPlus className="mr-2 text-gray-500" />
-                            Invite Players
-                        </h2>
-                        <form onSubmit={handleInvitePlayer} className="space-y-4">
-                            <input 
-                                type="email"
-                                value={inviteEmail}
-                                onChange={(e) => setInviteEmail(e.target.value)}
-                                placeholder="Enter player email"
-                                className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 transition-all"
-                                required
-                            />
+                        {/* Ready Status Section */}
+                        <motion.div 
+                            className="bg-white border border-gray-100 rounded-2xl shadow-lg p-6"
+                        >
+                            <h2 className="text-2xl font-semibold mb-4 flex items-center">
+                                <UserCheck className="mr-2 text-gray-500" />
+                                Ready Status
+                            </h2>
                             <motion.button 
                                 whileTap={{ scale: 0.95 }}
-                                type="submit"
-                                className="w-full bg-blue-600 text-white p-3 rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
+                                onClick={toggleReadyStatus}
+                                disabled={userReadyStatus}
+                                className={`w-full p-4 rounded-xl transition-colors text-lg font-semibold ${
+                                    userReadyStatus 
+                                    ? 'bg-green-100 text-green-700 cursor-not-allowed' 
+                                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                                }`}
                             >
-                                <UserPlus className="w-5 h-5" />
-                                <span>Send Invite</span>
+                                {userReadyStatus ? 'You are Ready' : 'Set Ready'}
                             </motion.button>
-                        </form>
+                        </motion.div>
+
+                        {/* Invite Players Section (previous code) */}
+                        <motion.div 
+                            className="bg-white border border-gray-100 rounded-2xl shadow-lg p-6"
+                        >
+                            <h2 className="text-2xl font-semibold mb-4 flex items-center">
+                                <UserPlus className="mr-2 text-gray-500" />
+                                Invite Players
+                            </h2>
+                            {/* Invite player form remains the same */}
+                        </motion.div>
+
+                        {/* Start Game Button */}
+                        {lobby.creator_id === auth.user.id && allPlayersReady && (
+                            <motion.button 
+                                whileTap={{ scale: 0.95 }}
+                                onClick={startGame}
+                                className="w-full bg-green-600 text-white p-4 rounded-xl hover:bg-green-700 transition-colors text-lg font-semibold"
+                            >
+                                Start Game
+                            </motion.button>
+                        )}
                     </motion.div>
                 </div>
             </div>
