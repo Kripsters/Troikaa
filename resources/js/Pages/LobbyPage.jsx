@@ -48,13 +48,12 @@ export default function LobbyPage({ lobby, auth }) {
     const leaveLobby = async () => {
         try {
             await axios.post(`/api/lobbies/${lobby.id}/leave`);
-            // Redirect to lobbies page or show a modal
-            window.location.href = '/api/lobbies';
+            window.location.href = '/api/lobbies'; // Redirect after leaving the lobby
         } catch (error) {
-            // Add error handling logic
             console.error('Error leaving lobby:', error);
         }
     };
+    
 
     return (
         <motion.div 
@@ -117,7 +116,7 @@ export default function LobbyPage({ lobby, auth }) {
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-2xl font-semibold flex items-center">
                                 <Users className="mr-2 text-gray-500" />
-                                Players ({players.length}/{lobby.max_players})
+                                Players ({lobby.current_players}/{lobby.max_players})
                             </h2>
                             <motion.button 
                                 whileHover={{ scale: 1.1 }}

@@ -35,6 +35,16 @@ class LobbyController extends Controller
     
         // Create new lobby
         $lobby = Lobby::create($validated);
+
+            // Automatically add the creator to the `lobby_user` table
+    \DB::table('lobby_user')->insert([
+        'lobby_id' => $lobby->id,
+        'user_id' => $lobby->creator_id,
+        'status' => 'waiting',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    
     
         // Return the created lobby
         return response()->json($lobby, 201);
@@ -130,5 +140,55 @@ class LobbyController extends Controller
         return response()->json(['message' => 'Failed to join the lobby'], 500);
     }
 }
+public function leaveLobby($lobbyId)
+{
+    // Get the current user
+    $user = auth()->user();
+
+    // Find the lobby
+    $lobby = Lobby::findOrFail($lobbyId);
+
+    // Check if the user is in the lobby
+    $userInLobby = \DB::table('lobby_user')
+        ->where('lobby_id', $lobby->id)
+        ->where('user_id', $user->id)
+        ->exists();
+
+    if (!$userInLobby) {
+        return response()->json(['message' => 'You are not part of this lobby'], 400);
+    }
+
+    // Start a transaction to ensure both operations succeed
+    \DB::beginTransaction();
+
+    try {
+        // Decrement the current players count
+        $lobby->decrement('current_players');
+
+        // Remove the user from the lobby_user table
+        \DB::table('lobby_user')
+            ->where('lobby_id', $lobby->id)
+            ->where('user_id', $user->id)
+            ->delete();
+
+        // Check if the current user is the creator of the lobby
+        if ($lobby->creator_id === $user->id) {
+            // Delete the lobby if the creator leaves
+            $lobby->delete();
+        }
+
+        // Commit the transaction
+        \DB::commit();
+
+        return response()->json(['message' => 'Successfully left the lobby'], 200);
+    } catch (\Exception $e) {
+        // Rollback the transaction if something goes wrong
+        \DB::rollBack();
+        return response()->json(['message' => 'Failed to leave the lobby'], 500);
+    }
+}
+
+
+
 
 }

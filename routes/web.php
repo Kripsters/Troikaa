@@ -5,7 +5,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\LobbyController;
-use App\Models\Lobby;
+
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -29,7 +29,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/lobbies', [LobbyController::class, 'store']);
     Route::get('/api/lobbies', [LobbyController::class, 'index'])->name('lobbies.index')->middleware(['auth', 'verified']);
     Route::get('/api/lobbies/{lobby}', [LobbyController::class, 'show'])->name('lobby.show');
-    Route::get('/api/lobbies/{lobby}/leave', [LobbyController::class, 'leave']);
+    Route::post('/api/lobbies/{lobby}/leave', [LobbyController::class, 'leaveLobby']);
+
     Route::delete('/api/lobbies/delete-by-creator', [LobbyController::class, 'deleteByUser']);
     Route::post('/lobbies/{lobbyId}/join', [LobbyController::class, 'joinLobby']);
 
