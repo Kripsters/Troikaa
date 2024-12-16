@@ -56,6 +56,7 @@ export default function Welcome({ auth }) {
                                 </a>
                             </div>
 
+
                             {/* Profile Card */}
                             <div className="bg-white dark:bg-gray-700 rounded-xl shadow-lg p-6 text-center transition hover:scale-105">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-12 w-12 text-purple-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
