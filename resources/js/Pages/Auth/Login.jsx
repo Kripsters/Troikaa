@@ -21,13 +21,13 @@ export default function Login({ status, canResetPassword }) {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-            <Head title="Log in" />
+        <div className="min-h-screen bg-green-900 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+            <Head title="Shithead - Player Login" />
 
-            <div className="w-full max-w-md space-y-8 bg-white shadow-xl rounded-xl p-8 border border-gray-200">
+            <div className="w-full max-w-md space-y-8 bg-white shadow-2xl rounded-xl p-8 border-4 border-red-600">
                 <div className="text-center">
-                    <h1 className="text-3xl font-extrabold text-gray-900">Sign in to your account</h1>
-                    <p className="mt-2 text-sm text-gray-600">Log in to access your account</p>
+                    <h1 className="text-3xl font-extrabold text-gray-900">Enter the Shithead Arena</h1>
+                    <p className="mt-2 text-sm text-gray-600">Log in to continue your card battle</p>
                 </div>
 
                 {status && (
@@ -39,59 +39,78 @@ export default function Login({ status, canResetPassword }) {
                 <form onSubmit={submit} className="space-y-6">
                     {/* Email Field */}
                     <div>
-                        <InputLabel htmlFor="email" value="Email Address" />
-                        <TextInput
+                        <label 
+                            htmlFor="email" 
+                            className="block text-sm font-medium text-gray-700"
+                        >
+                            Email
+                        </label>
+                        <input
                             id="email"
                             type="email"
                             name="email"
                             value={data.email}
                             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
-                                focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
+                                focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                             autoComplete="username"
-                            isFocused={true}
                             onChange={(e) => setData('email', e.target.value)}
                             placeholder="Enter your email"
+                            required
                         />
-                        <InputError message={errors.email} className="mt-2" />
+                        {errors.email && (
+                            <p className="mt-2 text-sm text-red-600">
+                                {errors.email}
+                            </p>
+                        )}
                     </div>
 
                     {/* Password Field */}
                     <div>
-                        <InputLabel htmlFor="password" value="Password" />
-                        <TextInput
+                        <label 
+                            htmlFor="password" 
+                            className="block text-sm font-medium text-gray-700"
+                        >
+                            Password
+                        </label>
+                        <input
                             id="password"
                             type="password"
                             name="password"
                             value={data.password}
                             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
-                                focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
+                                focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                             autoComplete="current-password"
                             onChange={(e) => setData('password', e.target.value)}
-                            placeholder="Enter your password"
+                            placeholder="Enter your secret password"
+                            required
                         />
-                        <InputError message={errors.password} className="mt-2" />
+                        {errors.password && (
+                            <p className="mt-2 text-sm text-red-600">
+                                {errors.password}
+                            </p>
+                        )}
                     </div>
 
-                    {/* Remember Me */}
+                    {/* Remember Me and Forgot Password */}
                     <div className="flex items-center justify-between">
                         <div className="flex items-center">
-                            <Checkbox
+                            <input
                                 id="remember"
+                                type="checkbox"
                                 name="remember"
                                 checked={data.remember}
                                 onChange={(e) => setData('remember', e.target.checked)}
-                                className="h-4 w-4 text-black focus:ring-black border-gray-300 rounded"
+                                className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
                             />
                             <label htmlFor="remember" className="ml-2 block text-sm text-gray-900">
                                 Remember me
                             </label>
                         </div>
 
-                        {/* Forgot Password Link */}
                         {canResetPassword && (
                             <Link
                                 href={route('password.request')}
-                                className="text-sm font-medium text-gray-600 hover:text-black"
+                                className="text-sm font-medium text-gray-600 hover:text-red-600"
                             >
                                 Forgot your password?
                             </Link>
@@ -100,23 +119,25 @@ export default function Login({ status, canResetPassword }) {
 
                     {/* Submit Button */}
                     <div>
-                        <PrimaryButton
+                        <button
+                            type="submit"
+                            disabled={processing}
                             className="w-full flex justify-center py-2 px-4 border border-transparent 
                                 rounded-md shadow-sm text-sm font-medium text-white 
-                                bg-black hover:bg-gray-800 focus:outline-none 
-                                focus:ring-2 focus:ring-offset-2 focus:ring-black"
-                            disabled={processing}
+                                bg-red-600 hover:bg-red-700 focus:outline-none 
+                                focus:ring-2 focus:ring-offset-2 focus:ring-red-500
+                                disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {processing ? 'Signing In...' : 'Sign In'}
-                        </PrimaryButton>
+                            {processing ? 'Entering Arena...' : 'Enter the Game'}
+                        </button>
                     </div>
                 </form>
 
                 {/* Sign Up Link */}
                 <div className="mt-6 text-center text-sm text-gray-600">
-                    Don't have an account?{' '}
-                    <Link href={route('register')} className="font-medium text-black hover:text-gray-800">
-                        Register here
+                    New to Shithead?{' '}
+                    <Link href={route('register')} className="font-medium text-red-600 hover:text-red-700">
+                        Create your player account
                     </Link>
                 </div>
             </div>
